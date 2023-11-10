@@ -1,15 +1,13 @@
 package com.example.nest_back.user;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -23,9 +21,10 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue
     private  Integer id;
-    private  String firstname;
-    private  String lastname;
-    private  String email;
+    @Column(unique = true)
+    private  String username;
+    @Column(length = 1000)
+    private  String bio;
     private String password;
 
     @Enumerated(EnumType.STRING)
@@ -37,7 +36,7 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return email;
+        return username;
     }
 
     @Override
