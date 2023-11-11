@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 public class UserRelationship {
     @Id
     @GeneratedValue
-    private Long id;
+    private Integer id;
 
     @ManyToOne
     @JoinColumn(name = "host_user_id")

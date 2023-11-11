@@ -8,8 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Integer> {
-    Optional<User> findByUsername(String email);
+    Optional<User> findByUsername(String username);
 
-    @Query("SELECT ur.followerUser FROM UserRelationship ur WHERE ur.hostUser.id = :userId")
-    List<User> getFollowers(@Param("userId") Long userId);
+
 }
