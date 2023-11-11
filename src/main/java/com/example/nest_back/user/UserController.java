@@ -23,7 +23,7 @@ public class UserController {
         return ResponseEntity.ok(followers);
     }
 
-    @PostMapping("/{host_user_id}/followers/{follower_user_id}")
+    @PostMapping("/{host_user_id}/add_follower/{follower_user_id}")
     public ResponseEntity<String> addFollower(
             @PathVariable Integer host_user_id,
             @PathVariable Integer follower_user_id
@@ -36,6 +36,29 @@ public class UserController {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+    @PostMapping("/{host_user_id}/delete_follower/{follower_user_id}")
+    public ResponseEntity<String> deleteFollower(
+            @PathVariable Integer host_user_id,
+            @PathVariable Integer follower_user_id
+    ) {
+        // Delegate to the service
+        boolean success = userService.deleteFollower(host_user_id, follower_user_id);
+
+        if (success) {
+            return ResponseEntity.ok("Follower deleted successfully");
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PatchMapping("/{userId}/bio")
+    public ResponseEntity<String> updateBio(
+            @PathVariable Integer userId,
+            @RequestParam String newBio
+    ) {
+        userService.updateBio(userId, newBio);
+        return ResponseEntity.ok("Bio updated successfully");
     }
 
 }

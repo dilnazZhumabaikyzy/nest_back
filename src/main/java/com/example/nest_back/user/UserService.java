@@ -44,4 +44,24 @@ public class UserService {
         return false;
     }
 
+    public void updateBio(Integer userId, String newBio) {
+        User user = userRepository.getById(userId);
+        user.setBio(newBio);
+        userRepository.save(user);
+    }
+
+
+    public boolean deleteFollower(Integer hostUserId, Integer followerUserId) {
+        Optional<UserRelationship> existingRelationship = userRelationshipRepository
+                .findByHostUserIdAndFollowerUserId(hostUserId, followerUserId);
+
+        if (existingRelationship.isPresent()) {
+            // Delete the relationship if it exists
+            userRelationshipRepository.delete(existingRelationship.get());
+            return true;
+        } else {
+            // Return false if the relationship doesn't exist
+            return false;
+        }
+    }
 }
