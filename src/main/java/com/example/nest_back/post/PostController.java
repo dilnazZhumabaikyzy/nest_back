@@ -2,31 +2,56 @@ package com.example.nest_back.post;
 
 
 import com.example.nest_back.user.User;
+import com.example.nest_back.user.UserService;
+import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/posts")
 public class PostController {
     private PostService postService;
+    private UserService userService;
 
     @Autowired
-    public PostController(PostService postService) {
+    public PostController(PostService postService, UserService userService) {
         this.postService = postService;
+        this.userService  = userService;
     }
 
-    @PostMapping
-    public ResponseEntity<Post> createPost(@RequestBody Post post) {
-        Post createdPost = postService.createPost(post);
+    @PostMapping("/{user_id}")
+    public ResponseEntity<Post> createPost(@RequestBody Post post, @PathVariable("user_id") Integer userId,
+                                           Authentication authentication) {
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        // Retrieve the authenticated user's ID from the SecurityContextHolder
+        User userDetails = (User) authentication.getPrincipal();
+        String authenticatedUsername = userDetails.getUsername();
+        // You may need to parse the authenticated user's username or ID based on your UserDetails implementation
+
+        // Compare the authenticated user's ID with the user_id provided in the request
+        // Assume you have a method to fetch the user's ID based on the username
+        Integer authenticatedUserId = userService.getUserIdByUsername(authenticatedUsername);
+
+        if (!authenticatedUserId.equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        // If the authenticated user ID matches the requested user ID, proceed to create the post
+        Post createdPost = postService.createPost(post, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdPost);
     }
+
     @PutMapping("/{postId}")
     public ResponseEntity<String> editPost(@PathVariable Integer postId, @RequestBody Post post) {
         // Assuming your PostService has an updatePost method
@@ -70,10 +95,9 @@ public class PostController {
 
     @DeleteMapping("/{postId}/comments")
     public ResponseEntity<String> deleteCommentFromPost(
-            @PathVariable Integer postId,
-            @RequestBody Comment comment
+            @PathVariable Integer postId,@RequestParam Integer commentID
     ) {
-        postService.deleteCommentFromPost(postId, comment);
+        postService.deleteCommentFromPost(postId, commentID);
         return ResponseEntity.ok("Comment deleted successfully");
     }
 

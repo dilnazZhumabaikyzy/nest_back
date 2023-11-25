@@ -1,6 +1,7 @@
 package com.example.nest_back.post;
 
 import com.example.nest_back.user.User;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,6 +16,7 @@ public class Comment {
     @GeneratedValue
     private Integer id;
     @ManyToOne
+    @JsonBackReference
     @JoinColumn(name = "post_id")
     private Post post;
     @ManyToOne

@@ -17,6 +17,8 @@ public class UserService {
         this.userRelationshipRepository = userRelationshipRepository;
     }
 
+
+
     public List<User> getFollowers(Integer userId) {
         List<UserRelationship> userRelationships = userRelationshipRepository.findByHostUserId(userId);
         return userRelationships.stream()
@@ -63,5 +65,9 @@ public class UserService {
             // Return false if the relationship doesn't exist
             return false;
         }
+    }
+
+    public Integer getUserIdByUsername(String authenticatedUsername) {
+        return userRepository.findByUsername(authenticatedUsername).orElseThrow(() -> new RuntimeException("User not found")).getId();
     }
 }

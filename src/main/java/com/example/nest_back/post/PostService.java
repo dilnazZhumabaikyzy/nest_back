@@ -3,12 +3,11 @@ package com.example.nest_back.post;
 
 import com.example.nest_back.user.User;
 import com.example.nest_back.user.UserRepository;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,7 +21,9 @@ public class PostService{
 
 
 
-    public Post createPost(Post post) {
+    public Post createPost(Post post, Integer user_id) {
+        User user = userRepository.findById(user_id).orElseThrow(() -> new RuntimeException("User not found"));
+        post.setUser(user);
         return postRepository.save(post);
     }
 
@@ -41,10 +42,20 @@ public class PostService{
         post.addComment(comment);
         postRepository.save(post);
     }
-    public void deleteCommentFromPost(Integer postId, Comment comment) {
+    public void deleteCommentFromPost(Integer postId, Integer commentId) {
         Post post = postRepository.getById(postId);
-        postRepository.save(post);
+        List<Comment> comments = post.getComments();
+        Iterator<Comment> iterator = comments.iterator();
+        while (iterator.hasNext()) {
+            Comment comment = iterator.next();
+            if (comment.getId().equals(commentId)) {
+                iterator.remove(); // Safely remove the element using iterator
+                postRepository.save(post); // Save changes to the database
+                break; // Exit loop after deleting the comment
+            }
+        }
     }
+
 
     public void updateComment(Integer postId, Comment updatedComment, Integer commentId) {
         Post post = postRepository.getById(postId);
@@ -101,4 +112,17 @@ public class PostService{
         }
     }
 
+    public Post getPostById(Integer postId){
+        Optional<Post> existingPostOptional = postRepository.findById(postId);
+        return existingPostOptional.orElseThrow(() -> new RuntimeException("Post not found"));
+    }
+    public List<Post>getUserPosts(Integer userId){
+        Optional<User> existingUserOptional = userRepository.findById(userId);
+        if (existingUserOptional.isPresent()) {
+            User existingUser = existingUserOptional.get();
+            return existingUser.getPosts();
+        } else {
+            throw new RuntimeException("User not found");
+        }
+    }
 }
