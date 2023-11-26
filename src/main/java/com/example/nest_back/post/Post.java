@@ -32,7 +32,6 @@ public class Post {
     private List<PostLike> likes = new ArrayList<PostLike>();
 
     @ManyToOne
-    @JsonBackReference
     @JoinColumn(name = "user_id")
     private User user;
 

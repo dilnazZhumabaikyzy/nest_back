@@ -26,41 +26,45 @@ public class PostController {
         this.userService  = userService;
     }
 
-    @PostMapping("/{user_id}")
-    public ResponseEntity<Post> createPost(@RequestBody Post post, @PathVariable("user_id") Integer userId,
-                                           Authentication authentication) {
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        // Retrieve the authenticated user's ID from the SecurityContextHolder
+    @PostMapping
+    public ResponseEntity<Post> createPost(@RequestBody Post post, Authentication authentication) {
         User userDetails = (User) authentication.getPrincipal();
         String authenticatedUsername = userDetails.getUsername();
-        // You may need to parse the authenticated user's username or ID based on your UserDetails implementation
-
-        // Compare the authenticated user's ID with the user_id provided in the request
-        // Assume you have a method to fetch the user's ID based on the username
         Integer authenticatedUserId = userService.getUserIdByUsername(authenticatedUsername);
 
-        if (!authenticatedUserId.equals(userId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-
-        // If the authenticated user ID matches the requested user ID, proceed to create the post
-        Post createdPost = postService.createPost(post, userId);
+        Post createdPost = postService.createPost(post, authenticatedUserId);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdPost);
     }
 
+
+    @Transactional
     @PutMapping("/{postId}")
-    public ResponseEntity<String> editPost(@PathVariable Integer postId, @RequestBody Post post) {
-        // Assuming your PostService has an updatePost method
+    public ResponseEntity<String> editPost(@PathVariable Integer postId, @RequestBody Post post,
+                                           Authentication authentication) {
+
+        // Fetch the post details from the database based on postId
+        Post existingPost = postService.getPostById(postId);
+
+        if (existingPost == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Post not found");
+        }
+//
+//        User userDetails = (User) authentication.getPrincipal();
+//        String authenticatedUsername = userDetails.getUsername();
+//        Integer authenticatedUserId = userService.getUserIdByUsername(authenticatedUsername);
+//
+//        // Check if the authenticated user is the owner of the post
+//        if (!existingPost.getUser().getId().equals(authenticatedUserId)) {
+//            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+//        }
+
+        // Only allow editing if the authenticated user is the owner of the post
         Post updatedPost = postService.updatePost(postId, post);
 
         if (updatedPost != null) {
             return ResponseEntity.ok("Post updated successfully");
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Post not found");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to update post");
         }
     }
 

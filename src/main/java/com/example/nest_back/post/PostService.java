@@ -5,6 +5,7 @@ import com.example.nest_back.user.User;
 import com.example.nest_back.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -86,6 +87,9 @@ public class PostService{
         postRepository.save(post);
     }
 
+
+
+    @Transactional
     public Post updatePost(Integer postId, Post updatedPost) {
         Optional<Post> existingPostOptional = postRepository.findById(postId);
 
@@ -112,6 +116,7 @@ public class PostService{
         }
     }
 
+    @Transactional
     public Post getPostById(Integer postId){
         Optional<Post> existingPostOptional = postRepository.findById(postId);
         return existingPostOptional.orElseThrow(() -> new RuntimeException("Post not found"));
